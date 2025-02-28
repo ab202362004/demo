@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>烘焙產品篩選</title>
+    <style>
+        body {
+            font-family: -apple-system, Arial, sans-serif;
+            margin: 10px;
+            padding: 0;
+        }
+        h1 {
+            font-size: 20px;
+        }
+        .filter-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        label {
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        select, input {
+            padding: 8px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 5px;
+            text-align: left;
+            word-wrap: break-word;
+        }
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        @media (max-width: 600px) {
+            th, td {
+                font-size: 10px;
+                padding: 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>烘焙產品篩選</h1>
+    <div class="filter-container">
+        <div>
+            <label for="dietFilter">葷素類型：</label>
+            <select id="dietFilter" onchange="filterProducts()">
+                <option value="all">全部</option>
+                <option value="蛋奶素">蛋奶素</option>
+                <option value="奶素">奶素</option>
+                <option value="五辛素">五辛素</option>
+                <option value="葷">葷</option>
+            </select>
+        </div>
+        <div>
+            <label for="ingredientFilter">成分：</label>
+            <input type="text" id="ingredientFilter" placeholder="輸入成分（如：土雞蛋）" oninput="filterProducts()">
+        </div>
+        <div>
+            <label for="keywordFilter">產品關鍵字：</label>
+            <input type="text" id="keywordFilter" placeholder="輸入產品名稱（如：吐司）" oninput="filterProducts()">
+        </div>
+    </div>
+
+    <table id="productTable">
+        <thead>
+            <tr>
+                <th>產品名稱</th>
+                <th>成分</th>
+                <th>葷素</th>
+                <th>保存方式</th>
+                <th>價格</th>
+                <th>備註</th>
+            </tr>
+        </thead>
+        <tbody id="productTableBody"></tbody>
+    </table>
+
+    <script>
+        // 產品數據（為簡化測試，這裡只保留少量數據，實際使用時請換回完整數據）
+        const products = [
+            {"產品名稱": "土雞蛋吐司", "成分": ["麵粉", "土雞蛋", "鮮奶", "糖", "鹽", "奶油", "水"], "葷素": "蛋奶素", "保存方式": {"常溫": "3天", "冷凍": "10天"}, "價格": 80.0, "備註": ""},
+            {"產品名稱": "伯爵乳酪球", "成分": ["麵粉", "法國老麵", "奶油", "伯爵茶葉", "糖", "岩鹽", "加州葡萄乾", "核桃", "乳酪丁"], "葷素": "蛋奶素", "保存方式": {"常溫": "2天", "冷凍": "14天"}, "價格": 40.0, "備註": ""},
+            {"產品名稱": "英式伯爵葡萄", "成分": ["伯爵紅茶", "葡萄乾", "核桃"], "葷素": "奶素", "保存方式": {"常溫": "2天", "冷凍": "14天"}, "價格": 55.0, "備註": ""},
+            {"產品名稱": "巴克瑞迪麵包", "成分": ["日本麵粉", "鮮奶", "魯邦酵母", "奶油", "核桃", "乳酪丁", "蛋白", "糖", "鹽"], "葷素": "蛋奶素", "保存方式": {"常溫": "2天", "冷凍": "14天"}, "價格": 180.0, "備註": ""},
+            {"產品名稱": "魯邦蜂蜜葡萄", "成分": ["魯邦種發酵", "加州葡萄乾", "嚴選蜂蜜", "乳酪丁"], "葷素": "奶素", "保存方式": {"常溫": "2天", "冷凍": "14天"}, "價格": 140.0, "備註": ""},
+            {"產品名稱": "優格蔓越莓", "成分": ["日本進口麵粉", "法國老麵", "奶油", "蔓越莓乾", "鮮奶", "優格蔓越莓"], "葷素": "奶素", "保存方式": {"常溫": "2天", "冷凍": "14天"}, "價格": 155.0, "備註": ""},
+            {"產品名稱": "大蒜乳酪法國", "成分": ["日本進口麵粉", "湯種法國麵團", "自製蒜泥醬", "新鮮蒜頭", "巴西里", "奶油", "鹽"], "葷素": "五辛素", "保存方式": {"常溫": "2天", "冷凍": "14天"}, "價格": 75.0, "備註": ""},
+            {"產品名稱": "蔓越莓貝果", "成分": ["日本麵粉", "鹽", "奶油", "魯邦酵母菌種", "蔓越莓"], "葷素": "蛋奶素", "保存方式": {"常溫": "2天", "冷凍": "14天"}, "價格": 38.0, "備註": ""},
+            {"產品名稱": "關西鹽麵包", "成分": ["工房種天然酵母", "日本鳥越歌磨粉", "法國頂級依思尼(Isigny)奶油"], "葷素": "奶素", "保存方式": {"常溫": "2天", "冷凍": "14天"}, "價格": 60.0, "備註": ""},
+            {"產品名稱": "明治天皇紅豆", "成分": ["赤魯邦菌種", "進口麵粉", "牛奶", "紅豆餡", "日本鹽漬櫻花"], "葷素": "奶素", "保存方式": {"冷藏": "2天", "冷凍": "7天"}, "價格": 70.0, "備註": "要冷藏"},
+            {"產品名稱": "鹽之花可頌", "成分": ["日本進口麵粉", "法國鐵塔奶油", "鹽之花", "赤魯邦酵母種", "星野生種"], "葷素": "奶素", "保存方式": {"常溫": "2天", "冷凍": "14天"}, "價格": 70.0, "備註": ""},
+            {"產品名稱": "經典菠蘿", "成分": ["雞蛋", "安佳奶油"], "葷素": "蛋奶素", "保存方式": {"常溫": "2天", "冷凍": "7天"}, "價格": 32.0, "備註": ""},
+            {"產品名稱": "肉鬆沙拉", "成分": ["麵粉", "蛋", "奶油", "天然酵母", "肉鬆", "美乃滋"], "葷素": "葷", "保存方式": {"冷藏": "2天"}, "價格": 43.0, "備註": "要冷藏"},
+            {"產品名稱": "香蔥芝麻", "成分": ["新鮮青蔥", "黑胡椒", "芝麻", "橄欖油"], "葷素": "五辛素", "保存方式": {"冷藏": "2天"}, "價格": 43.0, "備註": "要冷藏"},
+            {"產品名稱": "白脫香蒜", "成分": ["麵粉", "奶油", "蛋", "牛奶", "糖", "蒜仁", "巴西里葉"], "葷素": "五辛素", "保存方式": {"常溫": "2天", "冷凍": "14天"}, "價格": 45.0, "備註": ""},
+            {"產品名稱": "葡萄餐包", "成分": ["麵粉", "蛋", "牛奶", "奶油", "天然酵母", "鹽", "葡萄乾"], "葷素": "蛋奶素", "保存方式": {"常溫": "2天"}, "價格": 82.0, "備註": ""},
+            {"產品名稱": "墨西哥咖啡麵包", "成分": ["麵粉", "奶油", "蛋", "咖啡粉", "糖"], "葷素": "蛋奶素", "保存方式": {"常溫": "2天", "冷凍": "7天"}, "價格": 28.0, "備註": ""},
+            {"產品名稱": "地瓜甜甜圈", "成分": ["麵粉", "地瓜泥", "蛋", "奶油", "糖", "天然酵母", "鹽"], "葷素": "蛋奶素", "保存方式": {"常溫": "2天", "冷凍": "7天"}, "價格": 30.0, "備註": ""},
+            {"產品名稱": "維也納牛奶棒", "成分": ["低筋麵粉", "岩鹽", "新鮮酵母", "蛋", "牛奶", "奶油", "煉乳"], "葷素": "蛋奶素", "保存方式": {"冷藏": "3天", "冷凍": "7天"}, "價格": 50.0, "備註": "要冷藏"},
+            {"產品名稱": "牛寶寶", "成分": ["火腿", "起司片", "沙拉醬"], "葷素": "葷", "保存方式": {"冷藏": "3天", "冷凍": "7天"}, "價格": 25.0, "備註": "要冷藏"},
+            {"產品名稱": "美式臘腸餐包", "成分": ["進口麵粉", "蛋", "奶油", "小臘腸", "蜂蜜芥末", "岩鹽"], "葷素": "葷", "保存方式": {"冷藏": "3天", "冷凍": "7天"}, "價格": 60.0, "備註": "要冷藏"},
+            {"產品名稱": "巧克力豆豆", "成分": ["麵粉", "蛋", "牛奶", "奶油", "天然酵母", "鹽", "巧克力豆"], "葷素": "蛋奶素", "保存方式": {"常溫": "2天", "冷凍": "7天"}, "價格": 72.0, "備註": ""},
+            {"產品名稱": "原味經典可頌", "成分": ["進口麵粉", "細砂", "岩鹽", "無鹽奶油", "蛋", "蜂蜜", "進口奶油"], "葷素": "蛋奶素", "保存方式": {"常溫": "2天", "冷藏": "3天", "冷凍": "5天"}, "價格": 60.0, "備註": ""},
+            {"產品名稱": "美式軟餅乾可頌", "成分": ["進口麵粉", "細砂", "岩鹽", "無鹽奶油", "蛋", "蜂蜜", "進口奶油", "無鹽奶油", "黑糖", "海藻糖", "細砂", "蛋黃", "進口巧克力"], "葷素": "蛋奶素", "保存方式": {"常溫": "2天", "冷藏": "3天", "冷凍": "5天"}, "價格": 80.0, "備註": ""},
+            {"產品名稱": "香蒜可頌", "成分": ["進口麵粉", "細砂", "岩鹽", "無鹽奶油", "蛋", "蜂蜜", "進口奶油", "香蒜醬"], "葷素": "葷", "保存方式": {"冷藏": "2天", "冷凍": "5天"}, "價格": 80.0, "備註": "要冷藏"},
+            {"產品名稱": "吉寶鳳梨酥", "成分": ["台產土鳳梨酥", "17號金鑽鳳梨", "麵粉", "蛋黃", "奶油", "糖", "牛奶", "杏仁粉", "起士粉"], "葷素": "蛋奶素", "保存方式": {"常溫": "45天"}, "價格": 360.0, "備註": ""},
+            {"產品名稱": "蜂巢蛋糕", "成分": ["100%天然蜂蜜", "煉乳", "頂級進口麵粉"], "葷素": "蛋奶素", "保存方式": {"常溫": "5天"}, "價格": 320.0, "備註": ""},
+            {"產品名稱": "紅茶薄餅", "成分": ["奶油", "糖", "蛋白", "低筋麵粉", "紅茶", "巧克力"], "葷素": "蛋奶素", "保存方式": {"常溫": "25日"}, "價格": 155.0, "備註": "約20-23片"},
+            {"產品名稱": "杏仁薄餅", "成分": ["蛋白", "低筋麵粉", "杏仁果", "杏仁粉", "糖"], "葷素": "蛋奶素", "保存方式": {"常溫": "25日"}, "價格": 155.0, "備註": "約20-23片"},
+            {"產品名稱": "草莓瑪德蓮", "成分": ["蛋糕粉", "蛋", "進口發酵奶油", "新鮮草莓", "自製新鮮草莓醬", "草莓香甜酒", "草莓巧克力", "乾燥草莓碎粒"], "葷素": "蛋奶素", "保存方式": {"常溫": "10天", "開封後": "2天"}, "價格": 40.0, "備註": "約30G"},
+            {"產品名稱": "檸檬瑪德蓮", "成分": ["麵粉", "雞蛋", "發酵奶油", "動物鮮奶油", "糖", "檸檬"], "葷素": "蛋奶素", "保存方式": {"常溫": "10天", "開封後": "2天"}, "價格": 35.0, "備註": "約30G"}
+        ];
+        // 初始化頁面
+        document.addEventListener('DOMContentLoaded', function() {
+            displayProducts(products);
+        });
+
+        // 篩選產品
+        function filterProducts() {
+            const dietFilter = document.getElementById('dietFilter').value;
+            const ingredientFilter = document.getElementById('ingredientFilter').value.trim().toLowerCase();
+            const keywordFilter = document.getElementById('keywordFilter').value.trim().toLowerCase();
+
+            let filteredProducts = products;
+
+            // 篩選葷素
+            if (dietFilter !== 'all') {
+                filteredProducts = filteredProducts.filter(product => product.葷素 === dietFilter);
+            }
+
+            // 篩選成分
+            if (ingredientFilter) {
+                filteredProducts = filteredProducts.filter(product => 
+                    product.成分.some(ingredient => ingredient.toLowerCase().includes(ingredientFilter))
+                );
+            }
+
+            // 篩選產品關鍵字
+            if (keywordFilter) {
+                filteredProducts = filteredProducts.filter(product => 
+                    product.產品名稱.toLowerCase().includes(keywordFilter)
+                );
+            }
+
+            displayProducts(filteredProducts);
+        }
+
+        // 顯示產品到表格中
+        function displayProducts(productList) {
+            const tableBody = document.getElementById('productTableBody');
+            tableBody.innerHTML = ''; // 清空表格
+
+            productList.forEach(product => {
+                const row = document.createElement('tr');
+
+                // 產品名稱
+                const nameCell = document.createElement('td');
+                nameCell.textContent = product.產品名稱;
+                row.appendChild(nameCell);
+
+                // 成分
+                const ingredientsCell = document.createElement('td');
+                ingredientsCell.textContent = product.成分.join(', ');
+                row.appendChild(ingredientsCell);
+
+                // 葷素
+                const dietCell = document.createElement('td');
+                dietCell.textContent = product.葷素;
+                row.appendChild(dietCell);
+
+                // 保存方式
+                const storageCell = document.createElement('td');
+                storageCell.textContent = Object.entries(product.保存方式)
+                    .map(([key, value]) => `${key}: ${value}`).join(', ');
+                row.appendChild(storageCell);
+
+                // 價格
+                const priceCell = document.createElement('td');
+                priceCell.textContent = product.價格;
+                row.appendChild(priceCell);
+
+                // 備註
+                const noteCell = document.createElement('td');
+                noteCell.textContent = product.備註;
+                row.appendChild(noteCell);
+
+                tableBody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
