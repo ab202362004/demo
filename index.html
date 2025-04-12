@@ -44,6 +44,7 @@
             background-color: #f2f2f2;
             position: sticky;
             top: 0;
+            cursor: pointer;
         }
         tr:nth-child(even) {
             background-color: #f9f9f9;
@@ -58,7 +59,6 @@
                 padding: 3px;
             }
         }
-        /* 彈窗樣式 */
         .modal {
             display: none;
             position: fixed;
@@ -96,65 +96,61 @@
     </style>
 </head>
 <body>
-    <h1>烘焙產品篩選</h1>
-    <div class="filter-container">
-        <div>
-            <label for="dietFilter">葷素類型：</label>
-            <select id="dietFilter" onchange="filterProducts()">
-                <option value="all">全部</option>
-                <option value="蛋奶素">蛋奶素</option>
-                <option value="奶素">奶素</option>
-                <option value="五辛素">五辛素</option>
-                <option value="葷">葷</option>
-            </select>
-        </div>
-        <div>
-            <label for="ingredientFilter">成分：</label>
-            <input type="text" id="ingredientFilter" placeholder="輸入成分（如：土雞蛋）" oninput="filterProducts()">
-        </div>
-        <div>
-            <label for="keywordFilter">產品關鍵字：</label>
-            <input type="text" id="keywordFilter" placeholder="輸入產品名稱（如：吐司）" oninput="filterProducts()">
-        </div>
+<h1>烘焙產品篩選</h1>
+<div class="filter-container">
+    <div>
+        <label for="dietFilter">葷素類型：</label>
+        <select id="dietFilter" onchange="filterProducts()">
+            <option value="all">全部</option>
+            <option value="蛋奶素">蛋奶素</option>
+            <option value="奶素">奶素</option>
+            <option value="五辛素">五辛素</option>
+            <option value="葷">葷</option>
+        </select>
     </div>
-
-    <table id="productTable">
-        <thead>
-            <tr>
-                <th>產品名稱</th>
-                <th>成分</th>
-                <th>葷素</th>
-                <th>保存方式</th>
-                <th>價格</th>
-                <th>麵包種類</th>
-                <th>備註</th>
-            </tr>
-        </thead>
-        <tbody id="productTableBody"></tbody>
-    </table>
-
-    <!-- 彈窗 -->
-    <div id="productModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2 id="modalTitle"></h2>
-            <p><strong>成分：</strong><span id="modalIngredients"></span></p>
-            <p><strong>葷素：</strong><span id="modalDiet"></span></p>
-            <p><strong>保存方式：</strong><span id="modalStorage"></span></p>
-            <p><strong>價格：</strong><span id="modalPrice"></span></p>
-            <p><strong>麵包種類：</strong><span id="modalBreadType"></span></p>
-            <p><strong>產品特色：</strong><span id="modalFeatures"></span></p>
-            <p><strong>產品描述：</strong><span id="modalDescription"></span></p>
-            <div id="modalReheat" style="display: none;">
-                <p><strong>回烤方式：</strong><span id="modalReheatContent"></span></p>
-            </div>
-            <p><strong>備註：</strong><span id="modalNote"></span></p>
-        </div>
+    <div>
+        <label for="ingredientFilter">成分：</label>
+        <input type="text" id="ingredientFilter" placeholder="輸入成分（如：土雞蛋）" oninput="filterProducts()">
+        <label><input type="checkbox" id="excludeIngredient" onchange="filterProducts()"> 排除成分</label>
     </div>
-
-    <script>
-        // 產品數據（保持原有的 products 數組不變）
-        const products = [
+    <div>
+        <label for="keywordFilter">產品關鍵字：</label>
+        <input type="text" id="keywordFilter" placeholder="輸入產品名稱（如：吐司）" oninput="filterProducts()">
+    </div>
+</div>
+<table id="productTable">
+    <thead>
+        <tr>
+            <th onclick="sortTable('產品名稱')">產品名稱</th>
+            <th>成分</th>
+            <th onclick="sortTable('葷素')">葷素</th>
+            <th>保存方式</th>
+            <th onclick="sortTable('價格')">價格</th>
+            <th onclick="sortTable('麵包種類')">麵包種類</th>
+            <th>備註</th>
+        </tr>
+    </thead>
+    <tbody id="productTableBody"></tbody>
+</table>
+<div id="productModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2 id="modalTitle"></h2>
+        <p><strong>成分：</strong><span id="modalIngredients"></span></p>
+        <p><strong>葷素：</strong><span id="modalDiet"></span></p>
+        <p><strong>保存方式：</strong><span id="modalStorage"></span></p>
+        <p><strong>價格：</strong><span id="modalPrice"></span></p>
+        <p><strong>麵包種類：</strong><span id="modalBreadType"></span></p>
+        <p><strong>產品特色：</strong><span id="modalFeatures"></span></p>
+        <p><strong>產品描述：</strong><span id="modalDescription"></span></p>
+        <div id="modalReheat" style="display: none;">
+            <p><strong>回烤方式：</strong><span id="modalReheatContent"></span></p>
+        </div>
+        <p><strong>備註：</strong><span id="modalNote"></span></p>
+    </div>
+</div>
+<script>
+    const products = [
     {
         "產品名稱": "土雞蛋吐司",
         "成分": [
@@ -902,102 +898,106 @@
        "產品描述": "加入檸檬皮、檸檬汁、檸檬丁，入口就散發出爽口的檸檬清香。"
     }
 ];
+    let filteredProducts = products;
 
-        // 初始化頁面
-        document.addEventListener('DOMContentLoaded', function() {
-            displayProducts(products);
-        });
+    document.addEventListener('DOMContentLoaded', function() {
+        displayProducts(products);
+    });
 
-        // 篩選產品
-        function filterProducts() {
-            const dietFilter = document.getElementById('dietFilter').value;
-            const ingredientFilter = document.getElementById('ingredientFilter').value.trim().toLowerCase();
-            const keywordFilter = document.getElementById('keywordFilter').value.trim().toLowerCase();
+    function filterProducts() {
+        const dietFilter = document.getElementById('dietFilter').value;
+        const ingredientFilter = document.getElementById('ingredientFilter').value.trim().toLowerCase();
+        const keywordFilter = document.getElementById('keywordFilter').value.trim().toLowerCase();
+        const excludeIngredient = document.getElementById('excludeIngredient').checked;
 
-            let filteredProducts = products;
+        filteredProducts = products;
 
-            if (dietFilter !== 'all') {
-                filteredProducts = filteredProducts.filter(product => product.葷素 === dietFilter);
-            }
-
-            if (ingredientFilter) {
-                filteredProducts = filteredProducts.filter(product => 
-                    product.成分.some(ingredient => ingredient.toLowerCase().includes(ingredientFilter))
-                );
-            }
-
-            if (keywordFilter) {
-                filteredProducts = filteredProducts.filter(product => 
-                    product.產品名稱.toLowerCase().includes(keywordFilter)
-                );
-            }
-
-            displayProducts(filteredProducts);
+        if (dietFilter !== 'all') {
+            filteredProducts = filteredProducts.filter(p => p.葷素 === dietFilter);
         }
-
-        // 顯示產品到表格中
-        function displayProducts(productList) {
-            const tableBody = document.getElementById('productTableBody');
-            tableBody.innerHTML = '';
-
-            productList.forEach(product => {
-                const row = document.createElement('tr');
-                
-                row.innerHTML = `
-                    <td>${product.產品名稱}</td>
-                    <td>${product.成分.join(', ')}</td>
-                    <td>${product.葷素}</td>
-                    <td>${Object.entries(product.保存方式).map(([key, value]) => `${key}: ${value}`).join(', ')}</td>
-                    <td>${product.價格}</td>
-                    <td>${product.麵包種類 || '未指定'}</td>
-                    <td>${product.備註}</td>
-                `;
-
-                // 點擊顯示詳細資訊
-                row.addEventListener('click', () => showProductDetails(product));
-                tableBody.appendChild(row);
+        if (ingredientFilter) {
+            filteredProducts = filteredProducts.filter(product => {
+                const includes = product.成分.some(ingredient => ingredient.toLowerCase().includes(ingredientFilter));
+                return excludeIngredient ? !includes : includes;
             });
         }
+        if (keywordFilter) {
+            filteredProducts = filteredProducts.filter(p => p.產品名稱.toLowerCase().includes(keywordFilter));
+        }
 
-        // 顯示產品詳細資訊
-        function showProductDetails(product) {
-            const modal = document.getElementById('productModal');
-            document.getElementById('modalTitle').textContent = product.產品名稱;
-            document.getElementById('modalIngredients').textContent = product.成分.join(', ');
-            document.getElementById('modalDiet').textContent = product.葷素;
-            document.getElementById('modalStorage').textContent = Object.entries(product.保存方式)
-                .map(([key, value]) => `${key}: ${value}`).join(', ');
-            document.getElementById('modalPrice').textContent = product.價格;
-            document.getElementById('modalBreadType').textContent = product.麵包種類 || '未指定';
-            document.getElementById('modalFeatures').textContent = product.產品特色 || '無';
-            document.getElementById('modalDescription').textContent = product.產品描述 || '無';
-            document.getElementById('modalNote').textContent = product.備註 || '無';
+        displayProducts(filteredProducts);
+    }
 
-            // 處理回烤方式
-            const reheatDiv = document.getElementById('modalReheat');
-            const reheatContent = document.getElementById('modalReheatContent');
-            if (product.回烤方式 && product.回烤方式.trim() !== '') {
-                reheatContent.innerHTML = product.回烤方式.replace(/\n/g, '<br>');
-                reheatDiv.style.display = 'block';
-            } else {
-                reheatDiv.style.display = 'none';
+    function displayProducts(productList) {
+        const tableBody = document.getElementById('productTableBody');
+        tableBody.innerHTML = '';
+        productList.forEach(product => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${product.產品名稱}</td>
+                <td>${product.成分.join(', ')}</td>
+                <td>${product.葷素}</td>
+                <td>${Object.entries(product.保存方式).map(([k, v]) => `${k}: ${v}`).join(', ')}</td>
+                <td>${product.價格}</td>
+                <td>${product.麵包種類 || '未指定'}</td>
+                <td>${product.備註 || '無'}</td>
+            `;
+            row.addEventListener('click', () => showProductDetails(product));
+            tableBody.appendChild(row);
+        });
+    }
+
+    function showProductDetails(product) {
+        document.getElementById('modalTitle').textContent = product.產品名稱;
+        document.getElementById('modalIngredients').textContent = product.成分.join(', ');
+        document.getElementById('modalDiet').textContent = product.葷素;
+        document.getElementById('modalStorage').textContent = Object.entries(product.保存方式).map(([k, v]) => `${k}: ${v}`).join(', ');
+        document.getElementById('modalPrice').textContent = product.價格;
+        document.getElementById('modalBreadType').textContent = product.麵包種類 || '未指定';
+        document.getElementById('modalFeatures').textContent = product.產品特色 || '無';
+        document.getElementById('modalDescription').textContent = product.產品描述 || '無';
+        document.getElementById('modalNote').textContent = product.備註 || '無';
+        const reheatDiv = document.getElementById('modalReheat');
+        const reheatContent = document.getElementById('modalReheatContent');
+        if (product.回烤方式 && product.回烤方式.trim() !== '') {
+            reheatContent.innerHTML = product.回烤方式.replace(/\n/g, '<br>');
+            reheatDiv.style.display = 'block';
+        } else {
+            reheatDiv.style.display = 'none';
+        }
+        document.getElementById('productModal').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('productModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('productModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    let currentSort = { key: null, asc: true };
+    function sortTable(key) {
+        const isSameKey = currentSort.key === key;
+        currentSort.asc = isSameKey ? !currentSort.asc : true;
+        currentSort.key = key;
+
+        const sorted = [...filteredProducts].sort((a, b) => {
+            let valA = a[key] ?? '';
+            let valB = b[key] ?? '';
+            if (typeof valA === 'number' && typeof valB === 'number') {
+                return currentSort.asc ? valA - valB : valB - valA;
             }
+            return currentSort.asc ?
+                String(valA).localeCompare(String(valB), 'zh-Hant') :
+                String(valB).localeCompare(String(valA), 'zh-Hant');
+        });
 
-            modal.style.display = 'block';
-        }
-
-        // 關閉彈窗
-        function closeModal() {
-            document.getElementById('productModal').style.display = 'none';
-        }
-
-        // 點擊彈窗外部關閉
-        window.onclick = function(event) {
-            const modal = document.getElementById('productModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        }
-    </script>
+        displayProducts(sorted);
+    }
+</script>
 </body>
 </html>
