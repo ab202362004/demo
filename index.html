@@ -1360,7 +1360,7 @@ var products = [
         document.getElementById('modalTitle').textContent = product.產品名稱;
         document.getElementById('modalIngredients').textContent = product.成分.join(', ');
         document.getElementById('modalDiet').textContent = product.葷素;
-        document.getElementById('modalStorage').textContent = Object.entries(product.保存方式).map(([k, v]) => `${k}: ${v}`).join(', ');
+        document.getElementById('modalStorage').textContent = Object.entries(product.保存方式).map(([k, v]) => `${k}: ${v}`).join('\r\n ');
         document.getElementById('modalPrice').textContent = product.價格;
         document.getElementById('modalBreadType').textContent = product.麵包種類 || '未指定';
         document.getElementById('modalFeatures').textContent = product.產品特色 || '無';
