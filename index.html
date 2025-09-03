@@ -1346,7 +1346,7 @@ var products = [
                 <td>${product.產品名稱}</td>
                 <td>${product.成分.join(', ')}</td>
                 <td>${product.葷素}</td>
-                <td>${Object.entries(product.保存方式).map(([k, v]) => `${k}: ${v}`).join(', ')}</td>
+                <td>${Object.entries(product.保存方式).map(([k, v]) => `${k}: ${v}`).join('<br> ')}</td>
                 <td>${product.價格}</td>
                 <td>${product.麵包種類 || '未指定'}</td>
                 <td>${product.備註 || '無'}</td>
